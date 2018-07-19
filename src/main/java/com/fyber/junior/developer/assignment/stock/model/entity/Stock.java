@@ -31,6 +31,25 @@ public class Stock {
     @Column(name="CLIENT_ID")
     private long clientId;
 
+    @Override
+    public boolean equals(Object o) {
+
+        //If the object is compared with itself then return true
+        if (o == this) {
+            return true;
+        }
+
+       //Checking if o is an instance of Stock or not
+        if (!(o instanceof Stock)) {
+            return false;
+        }
+
+        //typecast o to Stock
+        Stock stock = (Stock)o;
+
+        return(stock.getstockSymbol().equals(this.getstockSymbol()));
+    }
+
     public long getStockId()
     {
         return stockId;

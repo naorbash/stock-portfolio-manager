@@ -6,7 +6,6 @@ import com.fyber.junior.developer.assignment.stock.model.entity.Stock;
 import com.fyber.junior.developer.assignment.stock.model.repository.ClientRepository;
 import com.fyber.junior.developer.assignment.stock.model.repository.StockRepository;
 import com.fyber.junior.developer.assignment.stock.rest.Exceptions.BadArgumentException;
-import com.fyber.junior.developer.assignment.stock.rest.Exceptions.ConflictException;
 import com.fyber.junior.developer.assignment.stock.rest.Exceptions.EntityNotFoundException;
 import com.fyber.junior.developer.assignment.stock.rest.Exceptions.InternalServerErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +40,33 @@ public class PortfolioService
     }
 
     /**
+     * This method is responsible to return all the registered stocks.
+     * @return List<Stock>
+     */
+
+    public List<Stock> getAllStocks()
+    {
+        Iterable<Stock> stocks = this.stockRepository.findAll();
+        List<Stock> stocksList = new ArrayList<>();
+        stocks.forEach(stockInRepository ->stocksList.add(stockInRepository));
+        return stocksList;
+
+    }
+
+    /**
+     * This method is responsible to return all the registered clients.
+     * @return List<Client>
+     */
+
+    public List<Client> getAllClients()
+    {
+        Iterable<Client> clients = this.clientRepository.findAll();
+        List<Client> clientsList = new ArrayList<>();
+        clients.forEach(clientInRepository ->clientsList.add(clientInRepository));
+        return clientsList;
+    }
+
+    /**
      * This service method is responsible to create a new client and attaching to it
      * the incoming portfolio.
      * @param newStockList the new client's portfolio list
@@ -53,7 +79,7 @@ public class PortfolioService
         }
 
         //validating the incoming stocks
-        PortfolioValidator.validatePortfolio(newStockList);
+        PortfolioValidator.validatePortfolio(newStockList,false);
 
         //creating a new Client Object with generated id by saving it to the DB
         Client newClient = clientRepository.save(new Client());
@@ -67,42 +93,92 @@ public class PortfolioService
         return clientRepository.save(newClient).getClientId();
     }
 
+    /**
+     * This service method is responsible to replace the entire portfolio of the client
+     * to the new incoming portfolio.
+     * @param clientId the id of the client which to replace his portfolio
+     * @param newStockList the list of the client's new stocks
+     */
     public void replaceClientPortfolio(Long clientId, List<Stock> newStockList) {
-        //if id is valid
-        if (clientId != null && clientId > 0) {
 
-            //if client exist in the DB
-            Client client = clientRepository.findByClientId(clientId);
-            if (client != null) {
+        //validating the client id
+        validateClient(clientId);
 
-                //If new stock list is not empty
-                if (newStockList != null && newStockList.size() > 1) {
+        //getting the client Object from the DB
+        Client client = clientRepository.findByClientId(clientId);
 
-                    //validating the incoming stocks
-                    PortfolioValidator.validatePortfolio(newStockList);
+        //If new stock list is not empty
+        if (newStockList != null && newStockList.size() > 0) {
 
-                    //deleting the client's old stocks
-                    stockRepository.deleteByClientId(clientId);
+            //validating the incoming stocks
+            PortfolioValidator.validatePortfolio(newStockList,false);
 
-                    //Connecting the new stocks to the client
-                    newStockList.forEach(stock -> stock.setClientId(client.getClientId()));
+            //deleting the client's old stocks
+            stockRepository.deleteByClientId(clientId);
 
-                    //setting the client's new stocks list
-                    client.setStocksList(newStockList);
+            //Connecting the new stocks to the client
+            newStockList.forEach(stock -> stock.setClientId(client.getClientId()));
 
-                    //saving changed client
-                    clientRepository.save(client);
+            //setting the client's new stocks list
+            client.setStocksList(newStockList);
 
-                } else {
-                    throw new BadArgumentException("no stocks found at your request");
-                }
-            } else {
-                throw new EntityNotFoundException("client id '" + clientId + "' does not exist");
-            }
+            //saving changed client
+            clientRepository.save(client);
+
         } else {
-            throw new BadArgumentException("client id '" + clientId + "' is not valid");
+            throw new BadArgumentException("no stocks found at your request");
         }
     }
+
+    /**
+     * This service method is responsible to Update all\some of the client's stocks
+     * Incoming stocks has to be owned by the user.
+     * @param clientId the id of the client which to update his portfolio
+     * @param stocksToUpdate the list of stocks to update
+     */
+    public void updateClientPortfolio(Long clientId, List<Stock> stocksToUpdate) {
+
+        //validating the client id
+        validateClient(clientId);
+
+        //getting the client Object from the DB
+        Client client = clientRepository.findByClientId(clientId);
+
+        //If the stock list is not empty
+        if (stocksToUpdate != null && stocksToUpdate.size() > 0) {
+
+            //validating the incoming stocks
+            PortfolioValidator.validatePortfolio(stocksToUpdate,true);
+
+            //validating the user indeed own all of the incoming stocks
+            for (Stock incomingStock : stocksToUpdate) {
+                if (!client.getStocksList().contains(incomingStock)) {
+                    throw new BadArgumentException("The stock '" + incomingStock.getstockSymbol() +
+                            "' doesn't exist in the client's portfolio");
+                }
+            }
+
+            //for each stock to update
+            for (Stock stockToUpdate : stocksToUpdate) {
+                // get the matching stock from the DB
+                Stock stockInDB = stockRepository.findByStockSymbolAndClientId(
+                        stockToUpdate.getstockSymbol(), client.getClientId());
+
+                //if the amount changes to 0, delete it from the client portfolio
+                if (stockToUpdate.getStockAmount() == 0) {
+                    client.getStocksList().remove(stockInDB);
+                    stockRepository.delete(stockInDB);
+
+                //otherwise, update its value
+                } else {
+                    stockInDB.setStockAmount(stockToUpdate.getStockAmount());
+                }
+            }
+        } else {
+            throw new BadArgumentException("no stocks found at your request");
+        }
+    }
+
 
     /**
      * This service method is responsible to return a client's portfolio value
@@ -111,42 +187,35 @@ public class PortfolioService
      * @return Double the client's portfolio value
      */
     public Double getPortfolioValue(Long clientId) {
-        //if id is valid
-        if (clientId != null && clientId > 0) {
 
-            //if client exist in the DB
-            if (clientRepository.findByClientId(clientId) != null) {
-                //get all of his stocks
-                List<Stock> clientStocks = stockRepository.findByClientId(clientId);
+        //validating the client id
+        validateClient(clientId);
 
-                //if his stocks list is not empty
-                if (clientStocks != null && clientStocks.size() > 1) {
-                    Double portfolioValue = 0.0;
+        //get all of the client's stocks
+        List<Stock> clientStocks = stockRepository.findByClientId(clientId);
 
-                    //calculate the client's portfolio value
-                    for (Stock stockInList : clientStocks) {
-                        Double stockValue = stockInList.getStockAmount() * getStockLastValue(stockInList.getstockSymbol());
-                        portfolioValue += stockValue;
-                    }
+        //if his stocks list is not empty
+        if (clientStocks != null && clientStocks.size() > 0) {
+            Double portfolioValue = 0.0;
 
-                    //returning the client's portfolio value
-                    return portfolioValue;
-
-                } else {
-                    return 0.0;
-                }
-            } else {
-                throw new EntityNotFoundException("client id '" + clientId + "' does not exist");
+            //calculate the client's portfolio value
+            for (Stock stockInList : clientStocks) {
+                Double stockValue = stockInList.getStockAmount() * getStockLastValue(stockInList.getstockSymbol());
+                portfolioValue += stockValue;
             }
+
+            //returning the client's portfolio value
+            return portfolioValue;
+
         } else {
-            throw new BadArgumentException("client id '" + clientId + "' is not valid");
+            return 0.0;
         }
     }
 
     /**
      * This aid method is responsible to return the last value of a giving stock
      * @param requestedStockSymbol the symbol of the stock to return its value
-     * @return Double the stock's last value
+     * @return Double, the stock's last value
      */
     private Double getStockLastValue(String requestedStockSymbol) {
         File stocksFile = new File(stockCSVFilePath);
@@ -191,32 +260,16 @@ public class PortfolioService
     }
 
     /**
-     * This method is responsible to return all the registered stocks.
-     *
-     * @return List<Stock>
+     * This aid method is responsible to validate if a client exist
+     * @param clientId the client's id
      */
-
-    public List<Stock> getAllStocks()
-    {
-        Iterable<Stock> stocks = this.stockRepository.findAll();
-        List<Stock> stocksList = new ArrayList<>();
-        stocks.forEach(stockInRepository ->stocksList.add(stockInRepository));
-        return stocksList;
-
+    private void validateClient(Long clientId){
+        if (clientId == null || clientId < 0) {
+            throw new BadArgumentException("client id '" + clientId + "' is not valid");
+        }else if(clientRepository.findByClientId(clientId)==null){
+            throw new EntityNotFoundException("client id '" + clientId + "' does not exist");
+        }
     }
 
-    /**
-     * This method is responsible to return all the registered clients.
-     *
-     * @return List<Client>
-     */
-
-    public List<Client> getAllClients()
-    {
-        Iterable<Client> clients = this.clientRepository.findAll();
-        List<Client> clientsList = new ArrayList<>();
-        clients.forEach(clientInRepository ->clientsList.add(clientInRepository));
-        return clientsList;
-    }
 
 }

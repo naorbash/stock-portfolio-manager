@@ -12,5 +12,6 @@ public interface StockRepository extends CrudRepository<Stock,Long> {
 
     Stock findByStockId(long stockId);
     List<Stock> findByClientId (long clientId);
+    Stock findByStockSymbolAndClientId(String StockSymbol,Long clientId);
     void deleteByClientId(long clientId);
 }

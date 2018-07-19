@@ -20,9 +20,9 @@ public class PortfolioValidator
      * @param stockList a list of the incoming stocks
      * @throws BadArgumentException,EntityNotFoundException
      */
-    public static void validatePortfolio(List<Stock> stockList){
+    public static void validatePortfolio(List<Stock> stockList,boolean portfolioExist){
         stockList.forEach(stock->{
-            validateAmount(stock);
+            validateAmount(stock,portfolioExist);
             validateSymbolPattern(stock);
             validateStockInFile(stock);
         });
@@ -31,11 +31,19 @@ public class PortfolioValidator
     }
 
     /**
-     * This method is responsible to check that the amount of the stock is positive
+     * This method is responsible to check that the amount of the stock is positive or zero.
+     * In a case of an existing portfolio, it is allowed that a stock will have 0 amount,
+     * Then it will be deleted by the service.
+     * Otherwise, in a new portfolio situations it is allowed to hold 1 stock and above.
      * @param stockToValidate the stock to validate
      */
-    private static void validateAmount(Stock stockToValidate){
-        if(stockToValidate.getStockAmount()<1){
+    private static void validateAmount(Stock stockToValidate,boolean portfolioExist){
+        if(portfolioExist){
+            if(stockToValidate.getStockAmount()<0){
+                throw new BadArgumentException("Invalid amount '" +stockToValidate.getStockAmount()+ "' for stock '" +
+                        stockToValidate.getstockSymbol()+ "'");
+            }
+        }else if(stockToValidate.getStockAmount()<1){
             throw new BadArgumentException("Invalid amount '" +stockToValidate.getStockAmount()+ "' for stock '" +
                     stockToValidate.getstockSymbol()+ "'");
         }
