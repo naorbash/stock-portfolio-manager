@@ -37,8 +37,13 @@ public class PortfolioResource
     }
 
     @PostMapping()
-    public Long create(@Valid @RequestBody List<Stock> listOfNewStocks)throws Exception {
+    public Long createNewPortfolio(@Valid @RequestBody List<Stock> listOfNewStocks){
         return portfolioService.addNewClientPortfolio(listOfNewStocks);
+    }
+
+    @PutMapping(path="/{clientId}")
+    public void replacePortfolio(@Valid @RequestBody List<Stock> listOfNewStocks, @PathVariable long clientId){
+        portfolioService.replaceClientPortfolio(clientId,listOfNewStocks);
     }
 
 

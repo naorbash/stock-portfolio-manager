@@ -11,6 +11,7 @@ import com.fyber.junior.developer.assignment.stock.rest.Exceptions.EntityNotFoun
 import com.fyber.junior.developer.assignment.stock.rest.Exceptions.InternalServerErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.List;
  * This service responsible to manage all of the logic required while working with the clients portfolios.
  */
 @Service
+@Transactional
 public class PortfolioService
 {
     private String stockCSVFilePath = "stocks.csv";
@@ -41,7 +43,7 @@ public class PortfolioService
     /**
      * This service method is responsible to create a new client and attaching to it
      * the incoming portfolio.
-     * @param newStockList
+     * @param newStockList the new client's portfolio list
      * @return Long the new client's id
      */
     public long addNewClientPortfolio(List<Stock> newStockList) {
@@ -105,7 +107,7 @@ public class PortfolioService
     /**
      * This service method is responsible to return a client's portfolio value
      * according to the received client's id.
-     * @param clientId
+     * @param clientId the client of which to return his portfolio value
      * @return Double the client's portfolio value
      */
     public Double getPortfolioValue(Long clientId) {
@@ -143,13 +145,13 @@ public class PortfolioService
 
     /**
      * This aid method is responsible to return the last value of a giving stock
-     * @param requestedStockSymbol
+     * @param requestedStockSymbol the symbol of the stock to return its value
      * @return Double the stock's last value
      */
     private Double getStockLastValue(String requestedStockSymbol) {
         File stocksFile = new File(stockCSVFilePath);
         BufferedReader br = null;
-        String line = "";
+        String line ;
         boolean stockFound = false;
         double stockValue = 0;
 
@@ -198,11 +200,9 @@ public class PortfolioService
     {
         Iterable<Stock> stocks = this.stockRepository.findAll();
         List<Stock> stocksList = new ArrayList<>();
-        stocks.forEach(stockInRepository ->
-        {
-            stocksList.add(stockInRepository);
-        });
+        stocks.forEach(stockInRepository ->stocksList.add(stockInRepository));
         return stocksList;
+
     }
 
     /**
@@ -214,102 +214,9 @@ public class PortfolioService
     public List<Client> getAllClients()
     {
         Iterable<Client> clients = this.clientRepository.findAll();
-        List<Client> ClientsList = new ArrayList<>();
-        clients.forEach(clientInRepository ->
-        {
-            ClientsList.add(clientInRepository);
-        });
-        return ClientsList;
-    }
-
-
-    /**
-     * This method is responsible to return all of the Client entities in the Clients table.
-     * @return List<Client>
-     */
-    /*
-    public List<Client> getAll() {
-        Iterable<Client> clients = this.clientRepository.findAll();
         List<Client> clientsList = new ArrayList<>();
-        clients.forEach(clientInRepository -> {
-            clientsList.add(clientInRepository);
-        });
+        clients.forEach(clientInRepository ->clientsList.add(clientInRepository));
         return clientsList;
     }
-    */
-
-
-    /**
-     * This method is responsible to return a client object by a giving machine-name.
-     * @param machineName
-     * @return Client on successes
-     * @throws EntityNotFoundException on failure.
-     */
-    /*
-    public Client getClientByMachineName(String machineName) {
-        if (machineName != null && !machineName.equals("")) {
-            Client client = clientRepository.findByMachineName(machineName);
-            if (client != null) {
-                return client;
-            }
-        }
-        throw new EntityNotFoundException("machine name not found: " + machineName);
-    }
-    */
-
-    /**
-     * This method is responsible to create a new client in the Client Table
-     * Returning the created object
-     * @param clientToCreate
-     * @return Client on successes, null on failure.
-     * @throws ConflictException on failure.
-     */
-    /*
-    public Client addClient(Client clientToCreate) {
-        String machineName = clientToCreate.getMachineName();
-
-        //If client instance dose not yet exist,create a new Client instance and save it.
-        if (clientRepository.findByMachineName(machineName) == null) {
-            Client createdClient = clientRepository.save(clientToCreate);
-            return createdClient;
-        }
-        throw new ConflictException("Conflict with client: " + machineName);
-    }
-*/
-
-    /**
-     * This method is responsible to update an existing client in the Clients Table
-     * Returning the updated object
-     * @param clientToUpdate
-     * @return Client on successes.
-     * @throws EntityNotFoundException on failure.
-     */
-    /*
-    public Client updateClient(Client clientToUpdate) {
-        Client clientToChange = getClientByMachineName(clientToUpdate.getMachineName());
-        if (clientToChange != null) {
-            Client updatedClient = clientRepository.save(clientToUpdate);
-            return updatedClient;
-        }
-        throw new EntityNotFoundException("machine name not found: " + clientToUpdate.getMachineName());
-    }
-    */
-
-    /**
-     * This method is responsible to delete a client by a giving machine-name from the Clients table.
-     * @param machineName
-     * @return boolean true on successes.
-     * @throws EntityNotFoundException on failure.
-     */
-    /*
-    public boolean deleteClientByMachineName(String machineName) {
-            Client clientToDelete = clientRepository.findByMachineName(machineName);
-            if (clientToDelete != null) {
-                clientRepository.delete(clientToDelete);
-                return true;
-            }
-        throw new EntityNotFoundException("machine not found: " + machineName);
-    }
-    */
 
 }
