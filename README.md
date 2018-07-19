@@ -6,7 +6,7 @@ Spring Boot App
 ## Features
 
 - **Allowing a user to create an accout and POST his portfolio** 
-- **The generated portfolio can now be edited east by the REST API** 
+- **The generated portfolio can now be edited easy by the REST API** 
 - **User can get his total portfolio value with one GET request** 
 - **User can get recommendations on stocks such as - most stable stock\best stock in the last days** 
 
