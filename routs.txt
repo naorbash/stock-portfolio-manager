@@ -1,0 +1,24 @@
+POST /api/portfolio:
+Creating a new user and portfolio 
+the body will contain a list of all stocks symbols and thier amount:
+
+
+
+GET /api/portfolio/value/{clientId}:
+Returning the client's total portfolio value
+
+
+PUT /api/portfolio/replace/{clientId}:
+Replacing the client's portfolio with a new one
+the body will contain a list of all stocks symbols and thier amount
+
+
+PUT /api/portfolio/update/{clientId}:
+Updating all\some of the client's stocks
+the body will contain a list of stocks symbols that the user own and thier new amount,
+In case of amount 0 the stock will be deleted from the portfolio.
+
+"GET /api/portfolio/stocks",
+
+"GET /api/portfolio/clients",
+"GET /api/portfolio/rest",
