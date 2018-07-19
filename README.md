@@ -1,7 +1,7 @@
 # Stock-Portfolio-Manager
-RESTful API for creating and maintaining stocks portfolios
+⭐️RESTful API server for creating and maintaining stocks portfolios
 
-Spring Boot App
+⭐️Spring Boot App
 
 ## Features
 
@@ -12,7 +12,9 @@ Spring Boot App
 
 ## Installation
 
-After downloading the project, enter the command line, navigate to its directory and type:
+After downloading the project and making sure you have an installed maven on your machine,
+
+enter the command line, navigate to its directory and type:
 
 ```bash
 mvn install 
@@ -22,11 +24,17 @@ Can be done also on any Spring supported IDE such as intellij
 
 ## Configurations
 
-All configurations can be done in the "application.properties" file
-Such as:
-- Changing the database from H2 to any thing you like
+All configurations can be done in the "application.properties" file.
+
+such as:
+- Changing the database from H2 to anything you like working with
 - Changing the database credentials
-- Manage the number of max-connections to the app
+- Manage SSL configurations
+- Manage the tomcat server configurations
+- Manage session configurations 
+- Manage the spring.security configurations
+- and more...
+
 
 
 ## Routs and API
