@@ -125,7 +125,7 @@ HTTP status code of 200 :ok:
 The client's total portfolio value with a HTTP status code of 200 :ok:
 
 
-### Recommend the most performing client's stock in previous days:
+### App's recommendation for the most performing client's stock in previous days:
 - **URL** will contain the client's id in the route and past days will be entered in the query string and it is limited to the amount supported by the history file:
 ```
 /api/portfolio/performance/{clientId}?pastDays=5
@@ -138,7 +138,7 @@ The client's total portfolio value with a HTTP status code of 200 :ok:
 the most performing client's stock in previous days with a HTTP status code of 200 :ok:
 
 
-### Recommend the most stable client's stock in previous days:
+### App's recommendation for the most stable client's stock in previous days:
 - **URL** will contain the client's id in the route and past days will be entered in the query string and it is limited to the amount supported by the history file and must be at least 2:
 ```
 /api/portfolio/stable/{clientId}?pastDays=5
@@ -151,7 +151,7 @@ the most performing client's stock in previous days with a HTTP status code of 2
 the most stable client's stock in previous days with a HTTP status code of 200 :ok:
 
 
-### Recommend the best (not owned by the client) stock to buy.:
+### App's recommendation for the best (not owned by the client) stock to buy.:
 - **URL** will contain the client's id in the route
 ```
 /api/portfolio/best/{clientId}
