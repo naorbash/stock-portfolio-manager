@@ -12,6 +12,13 @@ import javax.validation.constraints.Size;
 @Table(name = "STOCKS")
 public class Stock {
 
+    //default constructor
+    public Stock(){}
+
+    public Stock(String stockSymbol){
+        this.stockSymbol = stockSymbol;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="STOCK_ID")

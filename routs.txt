@@ -1,7 +1,6 @@
 POST /api/portfolio:
 Creating a new user and portfolio 
-the body will contain a list of all stocks symbols and thier amount:
-
+the body will contain a list of all stocks symbols and thier amount
 
 
 GET /api/portfolio/value/{clientId}:
@@ -10,14 +9,31 @@ Returning the client's total portfolio value
 
 PUT /api/portfolio/replace/{clientId}:
 Replacing the client's portfolio with a new one
-the body will contain a list of all stocks symbols and thier amount
+the body will contain a list of all stocks symbols and their amount
 
 
 PUT /api/portfolio/update/{clientId}:
 Updating all\some of the client's stocks
-the body will contain a list of stocks symbols that the user own and thier new amount,
+the body will contain a list of stocks symbols that the user own and their new amount,
 In case of amount 0 the stock will be deleted from the portfolio.
 
+/*************************************************BONUSES*****************************************************/
+GET /api/portfolio/performance/{clientId}?pastDays=5:
+Calculating the most performing client's stock in the last past days(past days can be entered in the query string and it is limited to the amount supported by the history file).
+Most performing stock is an owned stock that raised the most in value during the giving days entered.
+
+
+GET /api/portfolio/stable/{clientId}?pastDays=5:
+Calculating the most stable client's stock in the last past days(past days can be entered in the query string and it is limited to the amount supported by the history file and must be at least 2).
+Most stable stock is the one with least value fluctuation during the giving days entered.
+
+
+GET /api/portfolio/best/{clientId}:
+returning to the client a recommendation for the best (not owned by the client) stock to buy.
+Best stock is the one that whose current value is the highest among all stocks.
+
+
+****************************************************
 "GET /api/portfolio/stocks",
 
 "GET /api/portfolio/clients",

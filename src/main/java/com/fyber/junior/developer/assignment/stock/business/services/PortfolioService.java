@@ -91,7 +91,7 @@ public class PortfolioService {
     /**
      * This service method is responsible to replace the entire portfolio of the client
      * to the new incoming portfolio.
-     * @param clientId     the id of the client which to replace his portfolio
+     * @param clientId  the id of the client which to replace his portfolio
      * @param newStockList the list of the client's new stocks
      */
     public void replaceClientPortfolio(Long clientId, List<Stock> newStockList) {
@@ -128,7 +128,7 @@ public class PortfolioService {
     /**
      * This service method is responsible to Update all\some of the client's stocks
      * Incoming stocks has to be owned by the user.
-     * @param clientId       the id of the client which to update his portfolio
+     * @param clientId  the id of the client which to update his portfolio
      * @param stocksToUpdate the list of stocks to update
      */
     public void updateClientPortfolio(Long clientId, List<Stock> stocksToUpdate) {
@@ -215,7 +215,7 @@ public class PortfolioService {
      * Most performing stock is the one that raised the most in value during the giving days entered.
      * @param clientId the client of which to calculate the most performing stock.
      * @param pastDays how many days to go back in the history of the stocks values
-     * @return The performing stock's symbol
+     * @return The performing stocks symbol
      */
     public String mostPerformingStock(Long clientId, int pastDays) {
 
@@ -234,6 +234,8 @@ public class PortfolioService {
         if (clientStocks != null && clientStocks.size() > 0) {
             String performingStock = null;
             Double highestStockDiff = 0.0;
+
+            //getting the stocks-values map passing pastDays argument which hold the number of days to go back in history
             Map<String, List<Double>> stockHistoryMap = getStocksHistoryMap(pastDays);
 
             //For each of the client's stock,calculating the difference in value
@@ -254,7 +256,108 @@ public class PortfolioService {
             }
 
         }
-        throw new EntityNotFoundException("No stocks founded for user '" + clientId + "'");
+        throw new EntityNotFoundException("No stocks found for client '" + clientId + "'");
+    }
+
+    /**
+     * This service method is responsible to calculate the most stable client's stock.
+     * Most stable stock is the one with least value fluctuation during the giving days entered.
+     * @param clientId the client of which to calculate the most stable stock.
+     * @param pastDays how many days to go back in the history of the stocks values.
+     * @return The most stable stock symbol
+     */
+    public String mostStableStock(Long clientId, int pastDays) {
+        //If the requested stock history is not supported by the data in the file
+        if (!(pastDays <= supportedStockHistoryInDays)) {
+            throw new BadArgumentException("number of days '" + pastDays + "' is currently not supported");
+
+        }//If the requested stock history is less than 1, most stable stock function cannot perform
+        else if (pastDays < 2) {
+            throw new BadArgumentException("the minimum past days for this function: '2' ");
+        }
+
+        //validating the client id
+        validateClient(clientId);
+
+        //get all of the client's stocks
+        List<Stock> clientStocks = stockRepository.findByClientId(clientId);
+
+        //if his stocks list is not empty
+        if (clientStocks != null && clientStocks.size() > 0) {
+            String stableStock;
+            Double minStockFluctuation;
+
+            //getting the stocks-values map
+            Map<String, List<Double>> stocksHistoryMap = getStocksHistoryMap(pastDays);
+
+            //using the first stock to initializing the minimum fluctuation variable.
+            List<Double> firstStockValues = stocksHistoryMap.get(clientStocks.get(0).getstockSymbol());
+            Double firstStockMin = firstStockValues.get(0);
+            Double firstStockMax = firstStockValues.get(0);
+            for (Double value : firstStockValues) {
+                firstStockMin = firstStockMin < value ? firstStockMin : value;
+                firstStockMax = firstStockMax > value ? firstStockMax : value;
+            }
+            minStockFluctuation = Math.abs(firstStockMin - firstStockMax);
+            stableStock = clientStocks.get(0).getstockSymbol();
+
+            //For the rest of the client's stocks,calculating the fluctuation and finding the minimum.
+            for (int i = 1; i < clientStocks.size(); i++) {
+
+                List<Double> stockValues = stocksHistoryMap.get(clientStocks.get(i).getstockSymbol());
+                Double stockMin = stockValues.get(0);
+                Double stockMax = stockValues.get(0);
+
+                //finding min and max in the stock's values list
+                for (Double value : stockValues) {
+                    stockMin = stockMin < value ? stockMin : value;
+                    stockMax = stockMax > value ? stockMax : value;
+                }
+                Double currStockFluctuation = Math.abs(stockMax - stockMin);
+                if (currStockFluctuation < minStockFluctuation) {
+                    minStockFluctuation = currStockFluctuation;
+                    stableStock = clientStocks.get(i).getstockSymbol();
+                }
+            }
+            return stableStock;
+        }
+        throw new EntityNotFoundException("No stocks found for client '" + clientId + "'");
+    }
+
+    /**
+     * This service method is responsible to return a recommendation to the client
+     * of the best (not owned by the client) stock to buy.
+     * Best stock is the one that whose current value is the highest among all stocks.
+     * @param clientId the client to send the recommendation to according to his portfolio.
+     * @return The best stock symbol
+     */
+    public String bestStock(Long clientId) {
+
+        //validating the client id
+        validateClient(clientId);
+
+        //get all of the client's stocks
+        List<Stock> clientStocks = stockRepository.findByClientId(clientId);
+
+        //getting the stocks-values map passing 1 day back as an argument to get the last value
+        Map<String, List<Double>> stockHistoryMap = getStocksHistoryMap(1);
+
+            Double highestStockValue = 0.0;
+            String bestStockSymbol = null;
+
+            //looping on all of the existing stocks
+            for (Map.Entry<String, List<Double>> entry : stockHistoryMap.entrySet()) {
+
+                //if the current stock is not owned by the user, perform the max comparison
+                if (!clientStocks.contains(new Stock(entry.getKey()))) {
+                    Double currStockLastValue = entry.getValue().get(0);
+                    if(highestStockValue<currStockLastValue){
+                        highestStockValue = currStockLastValue;
+                        bestStockSymbol = entry.getKey();
+                }
+            }
+        }
+        return bestStockSymbol;
     }
 
 
