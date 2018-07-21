@@ -258,53 +258,6 @@ public class PortfolioService {
     }
 
 
-    /**
-     * This aid method is responsible to return the last value of a giving stock
-     * @param requestedStockSymbol the symbol of the stock to return its value
-     * @return Double, the stock's last value
-     */
-   /* private Double getStockLastValue(String requestedStockSymbol) {
-        File stocksFile = new File(stockCSVFilePath);
-        BufferedReader br = null;
-        String line ;
-        boolean stockFound = false;
-        double stockValue = 0;
-
-        try {
-            br = new BufferedReader(new FileReader(stocksFile));
-            while ((line = br.readLine()) != null) {
-
-                // use comma as separator
-                String[] stockLine = line.split(",");
-
-                //Extracting the stock symbol in the stock-file
-                String stockSymbolInFile = stockLine[0];
-
-                //when reaching the requested stock in the file
-                if (requestedStockSymbol.equals(stockSymbolInFile)) {
-                    stockFound = true;
-                    stockValue = Double.parseDouble(stockLine[1]);
-                }
-
-                //returning the last value when reaching the final occurrence of the stock in the file.
-                if (!requestedStockSymbol.equals(stockSymbolInFile) && stockFound) {
-                    return stockValue;
-                }
-            }
-        } catch (IOException e) {
-            throw new InternalServerErrorException("Error while processing your request, please try again later");
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    throw new InternalServerErrorException("Error while processing your request, please try again later");
-                }
-            }
-        }
-        return 0.0;
-    }
-*/
 
     /**
      * This aid method is responsible to validate if a client exist
