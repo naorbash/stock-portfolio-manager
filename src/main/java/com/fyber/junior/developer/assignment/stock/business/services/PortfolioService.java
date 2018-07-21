@@ -11,15 +11,11 @@ import com.fyber.junior.developer.assignment.stock.rest.Exceptions.InternalServe
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This service responsible to manage all of the logic required while working with the clients portfolios.
@@ -29,6 +25,7 @@ import java.util.Map;
 public class PortfolioService {
     private String stockCSVFilePath = "stocks.csv";
     private int supportedStockHistoryInDays = 8;
+    private int numberOfCharactersInAFileRowLimit = 100;
     private ClientRepository clientRepository;
     private StockRepository stockRepository;
 
@@ -41,7 +38,6 @@ public class PortfolioService {
 
     /**
      * This method is responsible to return all the registered stocks.
-     *
      * @return List<Stock>
      */
 
@@ -55,7 +51,6 @@ public class PortfolioService {
 
     /**
      * This method is responsible to return all the registered clients.
-     *
      * @return List<Client>
      */
 
@@ -69,7 +64,6 @@ public class PortfolioService {
     /**
      * This service method is responsible to create a new client and attaching to it
      * the incoming portfolio.
-     *
      * @param newStockList the new client's portfolio list
      * @return Long the new client's id
      */
@@ -97,7 +91,6 @@ public class PortfolioService {
     /**
      * This service method is responsible to replace the entire portfolio of the client
      * to the new incoming portfolio.
-     *
      * @param clientId     the id of the client which to replace his portfolio
      * @param newStockList the list of the client's new stocks
      */
@@ -135,7 +128,6 @@ public class PortfolioService {
     /**
      * This service method is responsible to Update all\some of the client's stocks
      * Incoming stocks has to be owned by the user.
-     *
      * @param clientId       the id of the client which to update his portfolio
      * @param stocksToUpdate the list of stocks to update
      */
@@ -186,7 +178,6 @@ public class PortfolioService {
     /**
      * This service method is responsible to return a client's portfolio value
      * according to the received client's id.
-     *
      * @param clientId the client of which to return his portfolio value
      * @return Double the client's portfolio value
      */
@@ -202,26 +193,35 @@ public class PortfolioService {
         if (clientStocks != null && clientStocks.size() > 0) {
             Double portfolioValue = 0.0;
 
+            //getting the stocks-values map passing 1 day back as an argument to get the last value
+            Map<String, List<Double>> stockHistoryMap = getStocksHistoryMap(1);
+
             //calculate the client's portfolio value
-            for (Stock stockInList : clientStocks) {
-                Double stockValue = stockInList.getStockAmount() * getStockLastValue(stockInList.getstockSymbol());
+            for (Stock clientStock : clientStocks) {
+                Double latestStockValue= stockHistoryMap.get(clientStock.getstockSymbol()).get(0);
+                Double stockValue = clientStock.getStockAmount() * latestStockValue;
                 portfolioValue += stockValue;
             }
 
             //returning the client's portfolio value
             return portfolioValue;
 
-        } else {
-            return 0.0;
         }
+        throw new EntityNotFoundException("No stocks founded for user '" +clientId+ "'");
     }
 
-
+    /**
+     * This service method is responsible to calculate the most performing client's stock.
+     * Most performing stock is the one that raised the most in value during the giving days entered.
+     * @param clientId the client of which to calculate the most performing stock.
+     * @param pastDays how many days to go back in the history of the stocks values
+     * @return The performing stock's symbol
+     */
     public String mostPerformingStock(Long clientId, int pastDays) {
 
         //If the requested stock history is not supported by the data in the file
-        if(!(pastDays<=supportedStockHistoryInDays)){
-            throw new BadArgumentException("number of days '" +pastDays+ "' is currently not supported");
+        if (!(pastDays <= supportedStockHistoryInDays)) {
+            throw new BadArgumentException("number of days '" + pastDays + "' is currently not supported");
         }
 
         //validating the client id
@@ -232,14 +232,29 @@ public class PortfolioService {
 
         //if his stocks list is not empty
         if (clientStocks != null && clientStocks.size() > 0) {
+            String performingStock = null;
+            Double highestStockDiff = 0.0;
             Map<String, List<Double>> stockHistoryMap = getStocksHistoryMap(pastDays);
-            for (Map.Entry<String, List<Double>> entry : stockHistoryMap.entrySet())
-            {
-                System.out.println(entry.getKey() + "/" + entry.getValue());
-            }
-        }
 
-        return null;
+            //For each of the client's stock,calculating the difference in value
+            for (Stock clientStock : clientStocks) {
+                List<Double> stockValues = stockHistoryMap.get(clientStock.getstockSymbol());
+                Double currentStockDiff = stockValues.get(0) - stockValues.get(pastDays - 1);
+                if (highestStockDiff < currentStockDiff) {
+                    highestStockDiff = currentStockDiff;
+                    performingStock = clientStock.getstockSymbol();
+                }
+            }
+
+            //If all stocks fell in value
+            if (highestStockDiff == 0.0) {
+                return "No stock raised in value in last '" + pastDays + "' days";
+            } else {
+                return performingStock;
+            }
+
+        }
+        throw new EntityNotFoundException("No stocks founded for user '" + clientId + "'");
     }
 
 
@@ -248,7 +263,7 @@ public class PortfolioService {
      * @param requestedStockSymbol the symbol of the stock to return its value
      * @return Double, the stock's last value
      */
-    private Double getStockLastValue(String requestedStockSymbol) {
+   /* private Double getStockLastValue(String requestedStockSymbol) {
         File stocksFile = new File(stockCSVFilePath);
         BufferedReader br = null;
         String line ;
@@ -289,7 +304,7 @@ public class PortfolioService {
         }
         return 0.0;
     }
-
+*/
 
     /**
      * This aid method is responsible to validate if a client exist
@@ -303,6 +318,13 @@ public class PortfolioService {
         }
     }
 
+    /**
+     * This aid method is responsible to build a map where the key is a stock symbol
+     * and the value is a List of all the stock's values in the past days.
+     * the size of the list represents the amount of days back and passes as an argument.
+     * @param pastDays how many days to go back in the history of the stock's values
+     * @return Map<String, List<Double>>, The stocks map
+     */
     private Map<String, List<Double>> getStocksHistoryMap(int pastDays) {
         File stocksFile = new File(stockCSVFilePath);
         Map<String, List<Double>> stocksMap = new HashMap<>();
@@ -328,21 +350,24 @@ public class PortfolioService {
                 //Running on an inner loop on all of the founded stock appearances and saving their values
                 //loop is limited to the pastDays variable
                 int i = 1;
-                while ((line = br.readLine()) != null ) {
+                while ((line = br.readLine()) != null) {
                     stockLine = line.split(",");
 
                     //if we are still on the same stock
                     if (stockSymbolInFile.equals(stockLine[0])) {
                         //if we are iterating in the limits of past days,enter the value to the list of values
-                        if(i < pastDays){
+                        if (i < pastDays) {
                             valuesList.add(Double.parseDouble(stockLine[1]));
                             i++;
                         }
+                        //marking to current stock line
+                        br.mark(numberOfCharactersInAFileRowLimit);
                     } else {
+                        //When reaching a new stock, resetting the reader one line back for next iteration
+                        br.reset();
                         break;
                     }
                 }
-
                 //Inserting the stock and its list of value-history to the map
                 stocksMap.put(stockSymbolInFile, valuesList);
             }
