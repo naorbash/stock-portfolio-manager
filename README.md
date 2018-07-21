@@ -50,7 +50,7 @@ Can be done also on any Spring supported IDE such as intellij
 
 - Body contant type: **JSON**
 
-Expected **body** will contain a list of all owned stocks symbols and thier amount like here:
+- Expected **body** will contain a list of all owned stocks symbols and thier amount like here:
 ```
     {
         "stockSymbol": "AMZN",
@@ -78,7 +78,7 @@ The generated client's id with a HTTP status code of 200 :ok:
 
 - Body contant type: **JSON**
 
-Expected **body** will contain a list of all stocks symbols and their amount like here:
+- Expected **body** will contain a list of all stocks symbols and their amount like here:
 ```
     {
         "stockSymbol": "FBEN",
@@ -101,7 +101,7 @@ HTTP status code of 200 :ok:
 
 - Body contant type: **JSON**
 
-Expected **body** will contain a list of stocks symbols that the user own and their new amount,
+- Expected **body** will contain a list of stocks symbols that the user own and their new amount,
 In case of amount 0 the stock will be deleted from the portfolio:
 ```
 [
