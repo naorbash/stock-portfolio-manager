@@ -24,9 +24,12 @@ Can be done also on any Spring supported IDE such as intellij
 
 ## Configurations
 
-All configurations can be done in the "application.properties" file.
+**All supported stocks symbols are located in the "_supportedStocks.txt_" file**
 
-such as:
+**All of the stocks history is located in the "_stocks.csv_" file**
+
+**All of the app configurations can be done in the "_application.properties_" file, such as:**
+
 - Changing the database from H2 to anything you like working with
 - Changing the database credentials
 - Manage the tomcat server configurations
