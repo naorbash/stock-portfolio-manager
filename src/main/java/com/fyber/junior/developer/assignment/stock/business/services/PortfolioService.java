@@ -36,30 +36,6 @@ public class PortfolioService {
         this.stockRepository = stockRepository;
     }
 
-    /**
-     * This method is responsible to return all the registered stocks.
-     * @return List<Stock>
-     */
-
-    public List<Stock> getAllStocks() {
-        Iterable<Stock> stocks = this.stockRepository.findAll();
-        List<Stock> stocksList = new ArrayList<>();
-        stocks.forEach(stockInRepository -> stocksList.add(stockInRepository));
-        return stocksList;
-
-    }
-
-    /**
-     * This method is responsible to return all the registered clients.
-     * @return List<Client>
-     */
-
-    public List<Client> getAllClients() {
-        Iterable<Client> clients = this.clientRepository.findAll();
-        List<Client> clientsList = new ArrayList<>();
-        clients.forEach(clientInRepository -> clientsList.add(clientInRepository));
-        return clientsList;
-    }
 
     /**
      * This service method is responsible to create a new client and attaching to it

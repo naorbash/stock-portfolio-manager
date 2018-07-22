@@ -19,12 +19,12 @@ In case of amount 0 the stock will be deleted from the portfolio.
 
 /*************************************************BONUSES*****************************************************/
 GET /api/portfolio/performance/{clientId}?pastDays=5:
-Calculating the most performing client's stock in the last past days(past days can be entered in the query string and it is limited to the amount supported by the history file).
+Calculating the most performing client's stock in previous days(past days can be entered in the query string and it is limited to the amount supported by the history file).
 Most performing stock is an owned stock that raised the most in value during the giving days entered.
 
 
 GET /api/portfolio/stable/{clientId}?pastDays=5:
-Calculating the most stable client's stock in the last past days(past days can be entered in the query string and it is limited to the amount supported by the history file and must be at least 2).
+Calculating the most stable client's stock in previous days(past days can be entered in the query string and it is limited to the amount supported by the history file and must be at least 2).
 Most stable stock is the one with least value fluctuation during the giving days entered.
 
 

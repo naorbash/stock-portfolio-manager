@@ -5,5 +5,5 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
 public class BadArgumentException extends RuntimeException{
-        public BadArgumentException(String message){ super(message); }
+        public BadArgumentException(String message){ super(message);}
 }

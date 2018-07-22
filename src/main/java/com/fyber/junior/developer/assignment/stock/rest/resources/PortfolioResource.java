@@ -21,7 +21,6 @@ public class PortfolioResource
     }
 
 
-
     @GetMapping(path="/performance/{clientId}",params = {"pastDays"})
     public String getMostPerformingStock(@PathVariable long clientId,@RequestParam("pastDays") Integer pastDays){
         return portfolioService.mostPerformingStock(clientId,pastDays);
@@ -57,15 +56,5 @@ public class PortfolioResource
         portfolioService.updateClientPortfolio(clientId,listOfNewStocks);
     }
 
-
-    @GetMapping(path="/stocks")
-    public List<Stock> getAllStocks(){
-        return portfolioService.getAllStocks();
-    }
-
-    @GetMapping(path="/clients")
-    public List<Client> getAllClients(){
-        return portfolioService.getAllClients();
-    }
 
 }
