@@ -10,7 +10,7 @@
 - **_User can get his total portfolio value with one GET request_** 
 - **_User can get recommendations on stocks such as - most stable stock in the last days\most performing stock the last days \highest value stock_** 
 
-## Compiling
+## Compile :hammer:
 
 After downloading the project and making sure you have an installed maven on your machine,
 
@@ -21,21 +21,7 @@ mvn install
 ```
 Can be done also on any Spring supported IDE such as intellij
 
-## Running
-
-After the first step,
-
-In the command line type:
-
-```bash
-mvn spring-boot:run
-```
-Can be done also on any Spring supported IDE such as intellij
-
-**:beers: Congratulations, Your REST server is up and running :beers:**
-
-
-## Configurations
+## Configure :wrench:
 
 **All supported stocks symbols are located in the "_supportedStocks.txt_" file**
 
@@ -50,9 +36,25 @@ Can be done also on any Spring supported IDE such as intellij
 - Manage the spring.security configurations
 - and more...
 
+## Run :arrow_forward:
+
+After the first step,
+
+In the command line type:
+
+```bash
+mvn spring-boot:run
+```
+Can be done also on any Spring supported IDE such as intellij
+
+**:beers: Congratulations, Your REST server is up and running :beers:**
 
 
-## REST Routs and API
+
+
+
+
+## REST Routs and API  :tram:
 ### Creating a new user and portfolio:
 
 - **URL**:
