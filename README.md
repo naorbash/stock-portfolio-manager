@@ -67,6 +67,7 @@ Can be done also on any Spring supported IDE such as intellij
 
 - Expected **body** will contain a list of all owned stocks symbols and thier amount like here:
 ```
+[
     {
         "stockSymbol": "AMZN",
         "stockAmount": 2
@@ -79,6 +80,7 @@ Can be done also on any Spring supported IDE such as intellij
         "stockSymbol": "GOOGL",
         "stockAmount": 1
     }
+]
 ```
 - **Returns**:
 The generated client's id with a HTTP status code of 200 :ok:
@@ -95,6 +97,7 @@ The generated client's id with a HTTP status code of 200 :ok:
 
 - Expected **body** will contain a list of all stocks symbols and their amount like here:
 ```
+[
     {
         "stockSymbol": "FBEN",
         "stockAmount": 4
@@ -103,6 +106,7 @@ The generated client's id with a HTTP status code of 200 :ok:
         "stockSymbol": "MSFT",
         "stockAmount": 3
     }
+]
 ```
 - **Returns**:
 HTTP status code of 200 :ok:
