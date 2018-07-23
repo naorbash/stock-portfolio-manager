@@ -39,9 +39,9 @@ Can be done also on any Spring supported IDE such as intellij
 
 ## Run :arrow_forward:
 
-After compiling,
+Before running, make sure there is no process listening on your app's port(default is set to 8080).
 
-In the command line type:
+After compiling, In the command line type:
 
 ```bash
 mvn spring-boot:run
