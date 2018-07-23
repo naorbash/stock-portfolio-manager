@@ -6,15 +6,15 @@
 ## Features
 
 - **_Allowing a user to create an accout and POST his portfolio_** 
-- **_The generated portfolio can now be edited easy by the REST API_** 
+- **_The generated portfolio can be edit easily by the REST API_** 
 - **_User can get his total portfolio value with one GET request_** 
-- **_User can get recommendations on stocks such as - most stable stock in the last days\most performing stock the last days \highest value stock_** 
+- **_User can GWT recommendations on stocks such as - most stable stock in the last days\most performing stock the last days \highest value stock_** 
 
 ## Compile :hammer:
 
 After downloading the project and making sure you have an installed maven on your machine,
 
-enter the command line, navigate to its directory and type:
+open the command line, navigate to the project's directory and type:
 
 ```bash
 mvn install 
@@ -31,6 +31,7 @@ Can be done also on any Spring supported IDE such as intellij
 
 - Changing the database from H2 to anything you like working with
 - Changing the database credentials
+- Changing the app's port
 - Manage the tomcat server configurations
 - Manage session configurations 
 - Manage the spring.security configurations
@@ -38,7 +39,7 @@ Can be done also on any Spring supported IDE such as intellij
 
 ## Run :arrow_forward:
 
-After the first step,
+After compiling,
 
 In the command line type:
 
@@ -48,9 +49,6 @@ mvn spring-boot:run
 Can be done also on any Spring supported IDE such as intellij
 
 **:beers: Congratulations, Your REST server is up and running :beers:**
-
-
-
 
 
 
