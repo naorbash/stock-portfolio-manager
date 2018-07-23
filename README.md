@@ -213,7 +213,7 @@ git push heroku master
 ```
 
 
-PRs are welcome.
+Any queastions are welcome.
 
 ## Credits
 
