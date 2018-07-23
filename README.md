@@ -39,7 +39,7 @@ Can be done also on any Spring supported IDE such as intellij
 
 ## Run :arrow_forward:
 
-Before running, make sure there is no process listening on your app's port(default is set to 8080).
+Before running, make sure there is no process that listening on your app's port(default is set to 8080).
 
 After compiling, In the command line type:
 
