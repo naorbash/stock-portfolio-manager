@@ -1,7 +1,10 @@
 package com.fyber.junior.developer.assignment.stock.business.validator;
 
 import com.fyber.junior.developer.assignment.stock.model.entity.Stock;
-import com.fyber.junior.developer.assignment.stock.rest.Exceptions.*;
+import com.fyber.junior.developer.assignment.stock.rest.Exceptions.BadArgumentException;
+import com.fyber.junior.developer.assignment.stock.rest.Exceptions.EntityNotFoundException;
+import com.fyber.junior.developer.assignment.stock.rest.Exceptions.InternalServerErrorException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

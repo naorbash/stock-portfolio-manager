@@ -1,10 +1,10 @@
 package com.fyber.junior.developer.assignment.stock.rest.resources;
 
 import com.fyber.junior.developer.assignment.stock.business.services.PortfolioService;
-import com.fyber.junior.developer.assignment.stock.model.entity.Client;
 import com.fyber.junior.developer.assignment.stock.model.entity.Stock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import java.util.List;
 
@@ -55,6 +55,5 @@ public class PortfolioResource
     public void updatePortfolio(@Valid @RequestBody List<Stock> listOfNewStocks, @PathVariable long clientId){
         portfolioService.updateClientPortfolio(clientId,listOfNewStocks);
     }
-
 
 }

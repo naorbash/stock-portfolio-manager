@@ -1,5 +1,7 @@
 package com.fyber.junior.developer.assignment.stock.model.entity;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import javax.persistence.Id;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -10,6 +12,7 @@ import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "STOCKS")
+@DynamicUpdate
 public class Stock {
 
     //default constructor

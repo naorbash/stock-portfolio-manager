@@ -1,12 +1,13 @@
 package com.fyber.junior.developer.assignment.stock.model.entity;
 
-import javax.persistence.Id;
+import org.hibernate.annotations.DynamicUpdate;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
 @Table(name = "CLIENTS")
+@DynamicUpdate
 public class Client {
 
     @Id
@@ -15,7 +16,7 @@ public class Client {
     @Column(name="CLIENT_ID")
     private long clientId;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true)
     @JoinColumn(name = "CLIENT_ID")
     private List<Stock> stocksList;
 

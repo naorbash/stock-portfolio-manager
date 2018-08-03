@@ -15,7 +15,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This service responsible to manage all of the logic required while working with the clients portfolios.
@@ -35,7 +39,6 @@ public class PortfolioService {
         this.clientRepository = clientRepository;
         this.stockRepository = stockRepository;
     }
-
 
     /**
      * This service method is responsible to create a new client and attaching to it
@@ -61,7 +64,7 @@ public class PortfolioService {
         newClient.setStocksList(newStockList);
 
         //returning the saved client's id
-        return clientRepository.save(newClient).getClientId();
+        return newClient.getClientId();
     }
 
     /**
@@ -89,12 +92,7 @@ public class PortfolioService {
 
             //Connecting the new stocks to the client
             newStockList.forEach(stock -> stock.setClientId(client.getClientId()));
-
-            //setting the client's new stocks list
-            client.setStocksList(newStockList);
-
-            //saving changed client
-            clientRepository.save(client);
+            stockRepository.saveAll(newStockList);
 
         } else {
             throw new BadArgumentException("no stocks found at your request");
@@ -169,12 +167,12 @@ public class PortfolioService {
         if (clientStocks != null && clientStocks.size() > 0) {
             Double portfolioValue = 0.0;
 
-            //getting the stocks-values map passing 1 day back as an argument to get the last value
-            Map<String, List<Double>> stockHistoryMap = getStocksHistoryMap(1);
+            //getting the client's stocks-values map passing 1 day back as an argument to get the last value
+            Map<String, List<Double>> clientStocksHistoryMap = getStocksHistoryMap(clientStocks,1);
 
             //calculate the client's portfolio value
             for (Stock clientStock : clientStocks) {
-                Double latestStockValue= stockHistoryMap.get(clientStock.getstockSymbol()).get(0);
+                Double latestStockValue = clientStocksHistoryMap.get(clientStock.getstockSymbol()).get(0);
                 Double stockValue = clientStock.getStockAmount() * latestStockValue;
                 portfolioValue += stockValue;
             }
@@ -211,16 +209,16 @@ public class PortfolioService {
             String performingStock = null;
             Double highestStockDiff = 0.0;
 
-            //getting the stocks-values map passing pastDays argument which hold the number of days to go back in history
-            Map<String, List<Double>> stockHistoryMap = getStocksHistoryMap(pastDays);
+            //getting the client's stocks-values map passing pastDays argument which hold the number of days to go back in history
+            Map<String, List<Double>> clientStocksHistoryMap = getStocksHistoryMap(clientStocks,pastDays);
 
-            //For each of the client's stock,calculating the difference in value
-            for (Stock clientStock : clientStocks) {
-                List<Double> stockValues = stockHistoryMap.get(clientStock.getstockSymbol());
-                Double currentStockDiff = stockValues.get(0) - stockValues.get(pastDays - 1);
+           //For each of the client's stock,calculating the difference in value
+            for (Map.Entry<String, List<Double>> stockEntry : clientStocksHistoryMap.entrySet())
+            {
+                Double currentStockDiff = stockEntry.getValue().get(0) - stockEntry.getValue().get(pastDays - 1);
                 if (highestStockDiff < currentStockDiff) {
                     highestStockDiff = currentStockDiff;
-                    performingStock = clientStock.getstockSymbol();
+                    performingStock = stockEntry.getKey();
                 }
             }
 
@@ -260,42 +258,16 @@ public class PortfolioService {
 
         //if his stocks list is not empty
         if (clientStocks != null && clientStocks.size() > 0) {
-            String stableStock;
-            Double minStockFluctuation;
 
             //getting the stocks-values map
-            Map<String, List<Double>> stocksHistoryMap = getStocksHistoryMap(pastDays);
+            Map<String, List<Double>> clientStocksHistoryMap = getStocksHistoryMap(clientStocks,pastDays);
 
-            //using the first stock to initializing the minimum fluctuation variable.
-            List<Double> firstStockValues = stocksHistoryMap.get(clientStocks.get(0).getstockSymbol());
-            Double firstStockMin = firstStockValues.get(0);
-            Double firstStockMax = firstStockValues.get(0);
-            for (Double value : firstStockValues) {
-                firstStockMin = firstStockMin < value ? firstStockMin : value;
-                firstStockMax = firstStockMax > value ? firstStockMax : value;
-            }
-            minStockFluctuation = Math.abs(firstStockMin - firstStockMax);
-            stableStock = clientStocks.get(0).getstockSymbol();
-
-            //For the rest of the client's stocks,calculating the fluctuation and finding the minimum.
-            for (int i = 1; i < clientStocks.size(); i++) {
-
-                List<Double> stockValues = stocksHistoryMap.get(clientStocks.get(i).getstockSymbol());
-                Double stockMin = stockValues.get(0);
-                Double stockMax = stockValues.get(0);
-
-                //finding min and max in the stock's values list
-                for (Double value : stockValues) {
-                    stockMin = stockMin < value ? stockMin : value;
-                    stockMax = stockMax > value ? stockMax : value;
-                }
-                Double currStockFluctuation = Math.abs(stockMax - stockMin);
-                if (currStockFluctuation < minStockFluctuation) {
-                    minStockFluctuation = currStockFluctuation;
-                    stableStock = clientStocks.get(i).getstockSymbol();
-                }
-            }
-            return stableStock;
+            //calculating using streams
+            return clientStocksHistoryMap.entrySet().stream()
+                    .collect(Collectors.toMap(e->e.getKey(),e->
+                            e.getValue().stream().max(Double::compare).get() - e.getValue().stream().min(Double::compare).get()))
+                    .entrySet().stream()
+                    .min((o1,o2)->o1.getValue().compareTo(o2.getValue())).get().getKey();
         }
         throw new EntityNotFoundException("No stocks found for client '" + clientId + "'");
     }
@@ -316,26 +288,15 @@ public class PortfolioService {
         List<Stock> clientStocks = stockRepository.findByClientId(clientId);
 
         //getting the stocks-values map passing 1 day back as an argument to get the last value
-        Map<String, List<Double>> stockHistoryMap = getStocksHistoryMap(1);
+        Map<String, List<Double>> stockHistoryMap = getStocksHistoryMap(null, 1);
 
-            Double highestStockValue = 0.0;
-            String bestStockSymbol = null;
-
-            //looping on all of the existing stocks
-            for (Map.Entry<String, List<Double>> entry : stockHistoryMap.entrySet()) {
-
-                //if the current stock is not owned by the user, perform the max comparison
-                if (!clientStocks.contains(new Stock(entry.getKey()))) {
-                    Double currStockLastValue = entry.getValue().get(0);
-                    if(highestStockValue<currStockLastValue){
-                        highestStockValue = currStockLastValue;
-                        bestStockSymbol = entry.getKey();
-                }
-            }
-        }
-        return bestStockSymbol;
+        //calculating best-stock using streams
+        return stockHistoryMap.entrySet().stream()
+                .filter(e -> !clientStocks.contains(new Stock(e.getKey())))
+                .max((e1, e2) -> e1.getValue().stream().max(Double::compare).get().
+                        compareTo(e2.getValue().stream().max(Double::compare).get()))
+                .get().getKey();
     }
-
 
 
     /**
@@ -345,7 +306,7 @@ public class PortfolioService {
     private void validateClient(Long clientId){
         if (clientId == null || clientId < 0) {
             throw new BadArgumentException("client id '" + clientId + "' is not valid");
-        }else if(clientRepository.findByClientId(clientId)==null){
+        }else if(!clientRepository.existsByClientId(clientId)){
             throw new EntityNotFoundException("client id '" + clientId + "' does not exist");
         }
     }
@@ -355,9 +316,10 @@ public class PortfolioService {
      * and the value is a List of all the stock's values in the past days.
      * the size of the list represents the amount of days back and passes as an argument.
      * @param pastDays how many days to go back in the history of the stock's values
-     * @return Map<String, List<Double>>, The stocks map
+     * @param clientStocks dictates which stocks to insert to the map, when null it means all stocks.
+     * @return Map<String, List<Double>>, The client's stocks map
      */
-    private Map<String, List<Double>> getStocksHistoryMap(int pastDays) {
+    private Map<String, List<Double>> getStocksHistoryMap(List<Stock> clientStocks,int pastDays) {
         File stocksFile = new File(stockCSVFilePath);
         Map<String, List<Double>> stocksMap = new HashMap<>();
         BufferedReader br = null;
@@ -367,41 +329,48 @@ public class PortfolioService {
             br = new BufferedReader(new FileReader(stocksFile));
             while ((line = br.readLine()) != null) {
 
-                //creating a list that will contains all previous values of the stock
-                List<Double> valuesList = new ArrayList<>();
-
                 // use comma as separator
                 String[] stockLine = line.split(",");
 
                 //Extracting the stock symbol in the stock-file
                 String stockSymbolInFile = stockLine[0];
 
-                //Extracting the first value of that giving stock
-                valuesList.add(Double.parseDouble(stockLine[1]));
+                //when clientStocks == null all of the stocks will be inserted to the map.
+                //Otherwise, only the client's stocks will be inserted
+                if (clientStocks == null || clientStocks.contains(new Stock(stockSymbolInFile))) {
 
-                //Running on an inner loop on all of the founded stock appearances and saving their values
-                //loop is limited to the pastDays variable
-                int i = 1;
-                while ((line = br.readLine()) != null) {
-                    stockLine = line.split(",");
 
-                    //if we are still on the same stock
-                    if (stockSymbolInFile.equals(stockLine[0])) {
-                        //if we are iterating in the limits of past days,enter the value to the list of values
-                        if (i < pastDays) {
-                            valuesList.add(Double.parseDouble(stockLine[1]));
-                            i++;
+                    //creating a list that will contains all previous values of the stock
+                    List<Double> valuesList = new ArrayList<>();
+
+
+                    //Extracting the first value of that giving stock
+                    valuesList.add(Double.parseDouble(stockLine[1]));
+
+                    //Running on an inner loop on all of the founded stock appearances and saving their values
+                    //loop is limited to the pastDays variable
+                    int i = 1;
+                    while ((line = br.readLine()) != null) {
+                        stockLine = line.split(",");
+
+                        //if we are still on the same stock
+                        if (stockSymbolInFile.equals(stockLine[0])) {
+                            //if we are iterating in the limits of past days,enter the value to the list of values
+                            if (i < pastDays) {
+                                valuesList.add(Double.parseDouble(stockLine[1]));
+                                i++;
+                            }
+                            //marking to current stock line
+                            br.mark(numberOfCharactersInAFileRowLimit);
+                        } else {
+                            //When reaching a new stock, resetting the reader one line back for next iteration
+                            br.reset();
+                            break;
                         }
-                        //marking to current stock line
-                        br.mark(numberOfCharactersInAFileRowLimit);
-                    } else {
-                        //When reaching a new stock, resetting the reader one line back for next iteration
-                        br.reset();
-                        break;
                     }
+                    //Inserting the stock and its list of value-history to the map
+                    stocksMap.put(stockSymbolInFile, valuesList);
                 }
-                //Inserting the stock and its list of value-history to the map
-                stocksMap.put(stockSymbolInFile, valuesList);
             }
         } catch (IOException e) {
             throw new InternalServerErrorException("Error while processing your request, please try again later");
