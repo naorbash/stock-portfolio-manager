@@ -6,15 +6,15 @@
 ## Features
 
 - **_Allowing a user to create an accout and POST his portfolio_** 
-- **_The generated portfolio can now be edited easy by the REST API_** 
+- **_The generated portfolio can be edit easily by the REST API_** 
 - **_User can get his total portfolio value with one GET request_** 
-- **_User can get recommendations on stocks such as - most stable stock in the last days\most performing stock the last days \highest value stock_** 
+- **_User can GWT recommendations on stocks such as - most stable stock in the last days\most performing stock the last days \highest value stock_** 
 
 ## Compile :hammer:
 
 After downloading the project and making sure you have an installed maven on your machine,
 
-enter the command line, navigate to its directory and type:
+open the command line, navigate to the project's directory and type:
 
 ```bash
 mvn install 
@@ -31,6 +31,7 @@ Can be done also on any Spring supported IDE such as intellij
 
 - Changing the database from H2 to anything you like working with
 - Changing the database credentials
+- Changing the app's port
 - Manage the tomcat server configurations
 - Manage session configurations 
 - Manage the spring.security configurations
@@ -38,9 +39,9 @@ Can be done also on any Spring supported IDE such as intellij
 
 ## Run :arrow_forward:
 
-After the first step,
+Before running, make sure there is no process that listening on your app's port(default is set to 8080).
 
-In the command line type:
+After compiling, In the command line type:
 
 ```bash
 mvn spring-boot:run
@@ -48,9 +49,6 @@ mvn spring-boot:run
 Can be done also on any Spring supported IDE such as intellij
 
 **:beers: Congratulations, Your REST server is up and running :beers:**
-
-
-
 
 
 
@@ -67,6 +65,7 @@ Can be done also on any Spring supported IDE such as intellij
 
 - Expected **body** will contain a list of all owned stocks symbols and thier amount like here:
 ```
+[
     {
         "stockSymbol": "AMZN",
         "stockAmount": 2
@@ -79,6 +78,7 @@ Can be done also on any Spring supported IDE such as intellij
         "stockSymbol": "GOOGL",
         "stockAmount": 1
     }
+]
 ```
 - **Returns**:
 The generated client's id with a HTTP status code of 200 :ok:
@@ -95,6 +95,7 @@ The generated client's id with a HTTP status code of 200 :ok:
 
 - Expected **body** will contain a list of all stocks symbols and their amount like here:
 ```
+[
     {
         "stockSymbol": "FBEN",
         "stockAmount": 4
@@ -103,6 +104,7 @@ The generated client's id with a HTTP status code of 200 :ok:
         "stockSymbol": "MSFT",
         "stockAmount": 3
     }
+]
 ```
 - **Returns**:
 HTTP status code of 200 :ok:
@@ -211,7 +213,7 @@ git push heroku master
 ```
 
 
-PRs are welcome.
+Any queastions are welcome.
 
 ## Credits
 
